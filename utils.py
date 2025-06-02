@@ -257,3 +257,21 @@ def calculate_checksum(edid_data: bytearray) -> int:
         raise ValueError("EDID data must be 128 bytes")
     checksum = (256 - (sum(edid_data[:127]) % 256)) % 256
     return checksum
+
+def generate_all(manufacturer:str, product:int, serial: int, week: int, year: int, version:int, revision: int, input_type: str,
+    bits_per_color: str, interface: str, signal_level: str, setup: bool, sync_hv: bool, sync_comp: bool, sync_green: bool, sync_serration: bool, 
+    horizontal:int, vertical:int, gamma: float, standby: bool, suspend: bool, active_off: bool, display_type: int, srgb: bool, preferred_timing: bool, 
+    continuous_timing: bool, digital: bool, red_x, red_y, green_x, green_y, blue_x, blue_y, white_x, white_y, selected_timings, manufacturer_byte, timings
+):
+    encode_manufacturer_id(manufacturer)
+    encode_product_id(product)
+    encode_serial_number(serial)
+    encode_manufacture_date(week, year)
+    encode_edid_version(version, revision)
+    build_video_input(input_type, bits_per_color, interface, signal_level, setup, sync_hv, sync_comp, sync_green, sync_serration)
+    encode_screen_size(horizontal, vertical)
+    encode_display_gamma(gamma)
+    encode_supported_features(standby, suspend, active_off, display_type, srgb, preferred_timing, continuous_timing, digital)
+    encode_colour_characteristics(red_x, red_y, green_x, green_y, blue_x, blue_y, white_x, white_y)
+    encode_established_timings(selected_timings, manufacturer_byte)
+    encode_standard_timings(timings)
