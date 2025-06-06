@@ -197,7 +197,7 @@ def encode_colour_characteristics(
 
     return " ".join(f"{b:02X}" for b in edid_bytes)
 
-def encode_established_timings(selected_timings, manufacturer_byte=0x00):
+def encode_established_timings(selected_timings, manufacturer_byte):
     established_timings = [
         "720x400 @ 70Hz", "720x400 @ 88Hz", "640x480 @ 60Hz", "640x480 @ 67Hz",
         "640x480 @ 72Hz", "640x480 @ 75Hz", "800x600 @ 56Hz", "800x600 @ 60Hz",
@@ -263,15 +263,22 @@ def generate_all(manufacturer:str, product:int, serial: int, week: int, year: in
     horizontal:int, vertical:int, gamma: float, standby: bool, suspend: bool, active_off: bool, display_type: int, srgb: bool, preferred_timing: bool, 
     continuous_timing: bool, digital: bool, red_x, red_y, green_x, green_y, blue_x, blue_y, white_x, white_y, selected_timings, manufacturer_byte, timings
 ):
-    encode_manufacturer_id(manufacturer)
-    encode_product_id(product)
-    encode_serial_number(serial)
-    encode_manufacture_date(week, year)
-    encode_edid_version(version, revision)
-    build_video_input(input_type, bits_per_color, interface, signal_level, setup, sync_hv, sync_comp, sync_green, sync_serration)
-    encode_screen_size(horizontal, vertical)
-    encode_display_gamma(gamma)
-    encode_supported_features(standby, suspend, active_off, display_type, srgb, preferred_timing, continuous_timing, digital)
-    encode_colour_characteristics(red_x, red_y, green_x, green_y, blue_x, blue_y, white_x, white_y)
-    encode_established_timings(selected_timings, manufacturer_byte)
-    encode_standard_timings(timings)
+    parts = [
+        encode_manufacturer_id(manufacturer),
+        encode_product_id(product),
+        encode_serial_number(serial),
+        encode_manufacture_date(week, year),
+        encode_edid_version(version, revision),
+        build_video_input(input_type, bits_per_color, interface, signal_level, setup, sync_hv, sync_comp, sync_green, sync_serration),
+        encode_screen_size(horizontal, vertical),
+        encode_display_gamma(gamma),
+        encode_supported_features(standby, suspend, active_off, display_type, srgb, preferred_timing, continuous_timing, digital),
+        encode_colour_characteristics(red_x, red_y, green_x, green_y, blue_x, blue_y, white_x, white_y),
+        encode_established_timings(selected_timings, manufacturer_byte),
+        encode_standard_timings(timings)
+    ]
+    
+    header = "00 FF FF FF FF FF FF 00"
+    all_bytes = (header + " " + " ".join(parts)).split()
+    lines = [" ".join(all_bytes[i:i+16]) for i in range(0, len(all_bytes), 16)]
+    return "\n".join(lines)

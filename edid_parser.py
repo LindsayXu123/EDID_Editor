@@ -8,10 +8,15 @@ def check_header(edid: bytes) -> bool:
 
 def parse_edid_version(edid: bytes, output: list, offset: list):
     version = edid[0x12]  # EDID version byte
-    revision = edid[0x13]  # EDID revision byte
-    print(f"EDID Version: {version}.{revision}")
+    print(f"EDID Version: {version}")
 
-    text = f"EDID Version: {version}.{revision}\n"
+    text = f"EDID Version: {version}\n"
+    output[offset[0]:offset[0]] = [text]
+    offset[0] += 1
+    
+def parse_edid_revision(edid: bytes, output: list, offset: list):
+    revision = edid[0x13]
+    text = f"EDID Revision: {revision}\n"
     output[offset[0]:offset[0]] = [text]
     offset[0] += 1
     
