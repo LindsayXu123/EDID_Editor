@@ -370,7 +370,7 @@ class EDIDEditorGUI:
         file_menu.add_command(label="Open File", command=self.open_file)
         file_menu.add_command(label="Save", command=self.save_edid)
         file_menu.add_command(label="Save as", command=self.save_edid_as)
-        file_menu.add_command(label="Help", command=self.not_implemented)
+        file_menu.add_command(label="Help", command=self.help_button)
         menubar.add_cascade(label="File", menu=file_menu)
         self.root.config(menu=menubar)
         
@@ -529,6 +529,9 @@ class EDIDEditorGUI:
 
         self.update_video_input_state()
 
+
+    def help_button(self):
+        messagebox.showinfo("Help", "This is and EDID Editor. You can load an existing .bin file or start from scratch. Please make sure all fields are filled to generate your EDID. ")
         
     def open_file(self):
         path = filedialog.askopenfilename(filetypes=[("EDID binary", "*.bin")])
