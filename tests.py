@@ -126,5 +126,3 @@ example_timings2 = [
 ]
 encoded2 = encode_standard_timings(example_timings2)
 print(encoded2)
-
-gen_all = generate_all()

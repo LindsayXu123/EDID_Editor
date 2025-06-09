@@ -45,7 +45,7 @@ def encode_manufacture_date(week: int, year: int) -> str:
     """
     if not (1 <= week <= 53):
         raise ValueError("Invalid week")
-    if not (1990 <= year <= 1990 + 254):
+    if not (1990 <= year <= 1990 + 100):
         raise ValueError("Invalid year")
     
     week_byte = week
@@ -149,11 +149,11 @@ def encode_supported_features(
 
     features = 0
     if standby:
-        features |= 0b01000000  # Bit 5
+        features |= 0b01000000
     if suspend:
-        features |= 0b00100000  # Bit 4
+        features |= 0b00100000
     if active_off:
-        features |= 0b00010000  # Bit 3
+        features |= 0b00010000
 
     features |= (display_type & 0b11) << 3
 
@@ -281,4 +281,5 @@ def generate_all(manufacturer:str, product:int, serial: int, week: int, year: in
     header = "00 FF FF FF FF FF FF 00"
     all_bytes = (header + " " + " ".join(parts)).split()
     lines = [" ".join(all_bytes[i:i+16]) for i in range(0, len(all_bytes), 16)]
+    print(standby, suspend, active_off, display_type, srgb, preferred_timing, continuous_timing, digital)
     return "\n".join(lines)

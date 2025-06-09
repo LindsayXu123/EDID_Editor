@@ -76,8 +76,8 @@ class EDIDEditorGUI:
         box_titles = ["Manufacture Details", "Video Input", "Display Details","Colour Characteristics", 
                       "Timing Info", "Checksum", "Output"]
         for i in range(5):
-            box = ttk.Frame(main_frame, padding=8, borderwidth=0, relief="flat")
-            box.grid(row=0, column=i, padx=5, pady=5, sticky='n')
+            box = ttk.Frame(main_frame, padding=5, borderwidth=0, relief="flat")
+            box.grid(row=0, column=i, padx=1, pady=1, sticky='n')
             self.outer_boxes.append(box)
 
         self.inner_boxes = []
@@ -86,7 +86,7 @@ class EDIDEditorGUI:
 
         self.header_var = tk.StringVar()
 
-        manufacture_box = ttk.LabelFrame(self.outer_boxes[0], text="Manufacture Details", padding=5, borderwidth=5)
+        manufacture_box = tk.LabelFrame(self.outer_boxes[0], text="Manufacture Details", bd=1, relief="solid", padx=5, pady=5)
         manufacture_box.pack(fill="both", expand=True, pady=5)
         self.inner_boxes.append(manufacture_box)
 
@@ -113,7 +113,7 @@ class EDIDEditorGUI:
 
         #video input
 
-        video_box = ttk.LabelFrame(self.outer_boxes[0], text="Video Input", padding=5)
+        video_box = tk.LabelFrame(self.outer_boxes[0], text="Video Input", bd=1, relief="solid", padx=5, pady=5)
         video_box.pack(fill="both", expand=True, pady=5)
         self.inner_boxes.append(video_box)
 
@@ -149,24 +149,24 @@ class EDIDEditorGUI:
         
         level_frame = ttk.Frame(video_box)
         level_frame.pack(anchor='w', pady=5)
-        ttk.Label(level_frame, text="Signal Level: ").grid(row=0, column=0, padx=(0, 5))
+        ttk.Label(level_frame, text="Signal Level: ").grid(row=0, column=0, sticky="w", padx=(3, 0))
 
         self.level_var = tk.StringVar()
-        self.level_combo = ttk.Combobox(level_frame, textvariable=self.level_var, width=15, state="readonly")
+        self.level_combo = ttk.Combobox(level_frame, textvariable=self.level_var, width=28, state="readonly")
         self.level_combo['values'] = ("0.700, 0.300 (1.0 V p-p)", "0.714, 0.286 (1.0 V p-p)", "1.000, 0.286 (1.0 V p-p)",
             "0.700, 0.000 (0.7 V p-p)")
         self.level_combo.current(0)
-        self.level_combo.grid(row=0, column=1)
+        self.level_combo.grid(row=1, column=0, padx=(3,3), pady=(3,0))
         
         setup_frame = ttk.Frame(video_box)
         setup_frame.pack(anchor='w', pady=5)
-        ttk.Label(setup_frame, text="Video Setup: ").grid(row=0, column=0, padx=(0, 5))
+        ttk.Label(setup_frame, text="Video Setup: ").grid(row=0, column=0, sticky="w", padx=(3,0))
 
         self.setup_var = tk.StringVar()
-        self.setup_combo = ttk.Combobox(setup_frame, textvariable=self.setup_var, width=15, state="readonly")
+        self.setup_combo = ttk.Combobox(setup_frame, textvariable=self.setup_var, width=28, state="readonly")
         self.setup_combo['values'] = ("Blank-to-Black setup or pedestal", "Blank level = Black level")
         self.setup_combo.current(0)
-        self.setup_combo.grid(row=0, column=1)
+        self.setup_combo.grid(row=1, column=0, padx=(3,3), pady=(3,0))
         
         checklist_sync_frame = ttk.LabelFrame(video_box, text="Sync Types Supported", padding=10)
         checklist_sync_frame.pack(padx=10, pady=10, anchor='w')
@@ -185,7 +185,7 @@ class EDIDEditorGUI:
         
         #display
         
-        display_box = ttk.LabelFrame(self.outer_boxes[1], text="Display Details", padding=5)
+        display_box = tk.LabelFrame(self.outer_boxes[1], text="Display Details", bd=1, relief="solid", padx=5, pady=5)
         display_box.pack(fill="both", expand=True, pady=5)
         self.inner_boxes.append(display_box)
         
@@ -200,12 +200,12 @@ class EDIDEditorGUI:
         
         #supported features
         
-        supported_box = ttk.LabelFrame(self.outer_boxes[1], text="Supported Features", padding=5)
+        supported_box = tk.LabelFrame(self.outer_boxes[1], text="Supported Features", bd=1, relief="solid", padx=5, pady=5)
         supported_box.pack(fill="both", expand=True, pady=5)
         self.inner_boxes.append(supported_box)
         
-        checklist_support_frame = ttk.LabelFrame(supported_box, text="Sync Types Supported", padding=10)
-        checklist_support_frame.pack(padx=10, pady=10, anchor='w')
+        checklist_support_frame = ttk.LabelFrame(supported_box, text="Sync Types Supported", padding=5)
+        checklist_support_frame.pack(padx=10, pady=5, anchor='w')
 
         options_support = ["Standby", "Suspend", "Active-off", "sRGB", "Preferred Timing", "Continuous Timing"]
         self.self_support_vars = []
@@ -221,13 +221,13 @@ class EDIDEditorGUI:
         
         display_d_frame = ttk.Frame(supported_box)
         display_d_frame.pack(anchor='w', pady=5)
-        ttk.Label(display_d_frame, text="Display Types: ").grid(row=0, column=0, padx=(0, 5))
+        ttk.Label(display_d_frame, text="Display Types: ").grid(row=0, column=0, sticky="w", padx=(3,0))
 
         self.display_d_var = tk.StringVar()
-        self.display_d_combo = ttk.Combobox(display_d_frame, textvariable=self.display_d_var, width=15, state="readonly")
+        self.display_d_combo = ttk.Combobox(display_d_frame, textvariable=self.display_d_var, width=30, state="readonly")
         self.display_d_combo['values'] = ("RGB 4:4:4", "RGB 4:4:4 & YCrCb 4:4:4", "RGB 4:4:4 & YCrCb 4:2:2", "RGB 4:4:4 & YCrCb 4:4:4 & YCrCb 4:2:2")
         self.display_d_combo.current(0)
-        self.display_d_combo.grid(row=0, column=1)
+        self.display_d_combo.grid(row=1, column=0, padx=(2,2), pady=(2,0))
         
         analog_rb = tk.Radiobutton(supported_box, text="Analog", variable=self.signal_type_var, value="Analog", command=self.update_video_input_state)
         analog_rb.pack(anchor='w')
@@ -235,29 +235,17 @@ class EDIDEditorGUI:
         
         display_frame = ttk.Frame(supported_box)
         display_frame.pack(anchor='w', pady=5)
-        ttk.Label(display_frame, text="Display Types: ").grid(row=0, column=0, padx=(0, 5))
+        ttk.Label(display_frame, text="Display Types: ").grid(row=0, column=0, sticky="w", padx=(3, 0))
 
         self.display_var = tk.StringVar()
-        self.display_a_combo = ttk.Combobox(display_frame, textvariable=self.display_var, width=15, state="readonly")
+        self.display_a_combo = ttk.Combobox(display_frame, textvariable=self.display_var, width=30, state="readonly")
         self.display_a_combo['values'] = ("Monochrome or Grayscale", "RGB Color", "Non-RGB Color", "Undefined")
         self.display_a_combo.current(0)
-        self.display_a_combo.grid(row=0, column=1)
-        
-        if self.signal_type_var.get() == "Digital":
-            display_options = ("RGB 4:4:4", "RGB 4:4:4 & YCrCb 4:4:4", "RGB 4:4:4 & YCrCb 4:2:2", "RGB 4:4:4 & YCrCb 4:4:4 & YCrCb 4:2:2")
-            selected_display = self.display_d_var.get()
-        else:
-            display_options = ("Monochrome or Grayscale", "RGB Color", "Non-RGB Color", "Undefined")
-            selected_display = self.display_var.get()
-
-        try:
-            self.display_type_index = display_options.index(selected_display)
-        except ValueError:
-            self.display_type_index = 0
+        self.display_a_combo.grid(row=1, column=0, padx=(2,2), pady=(2,0))
         
         #colour
         
-        colour_box = ttk.LabelFrame(self.outer_boxes[1], text="Colour Characteristics", padding=5)
+        colour_box = tk.LabelFrame(self.outer_boxes[1], text="Colour Characteristics", bd=1, relief="solid", padx=5, pady=5)
         colour_box.pack(fill="both", expand=True, pady=5)
         self.inner_boxes.append(colour_box)
 
@@ -287,12 +275,12 @@ class EDIDEditorGUI:
         
         #timings
         
-        established_box = ttk.LabelFrame(self.outer_boxes[2], text="Established Timings", padding=5)
+        established_box = tk.LabelFrame(self.outer_boxes[2], text="Established Timings", bd=1, relief="solid", padx=5, pady=5)
         established_box.pack(fill="both", expand=True, pady=5)
         self.inner_boxes.append(established_box)
         
-        checklist_established_frame = ttk.LabelFrame(established_box, padding=10)
-        checklist_established_frame.pack(padx=10, pady=10, anchor='w')
+        checklist_established_frame = ttk.LabelFrame(established_box, padding=5)
+        checklist_established_frame.pack(padx=10, pady=5, anchor='w')
 
         self.options_established = ["720x400 @ 70Hz", "720x400 @ 88Hz", "640x480 @ 60Hz", "640x480 @ 67Hz", "640x480 @ 72Hz", "640x480 @ 75Hz", "800x600 @ 56Hz", "800x600 @ 60Hz",
         "800x600 @ 72Hz", "800x600 @ 75Hz", "832x624 @ 75Hz", "1024x768 @ 87Hz (interlaced)", "1024x768 @ 60Hz", "1024x768 @ 70Hz", "1024x768 @ 75Hz", "1280x1024 @ 75Hz"]
@@ -304,7 +292,7 @@ class EDIDEditorGUI:
             chk.grid(row=i, column=0, sticky="w", pady=2)
             self.established_vars.append(var)
                     
-        manu_timings_box = ttk.LabelFrame(self.outer_boxes[2], text="Manufacturer Timings", padding=5)
+        manu_timings_box = tk.LabelFrame(self.outer_boxes[2], text="Manufacturer Timings", bd=1, relief="solid", padx=5, pady=5)
         manu_timings_box.pack(fill="both", expand=True, pady=5)
         self.inner_boxes.append(manu_timings_box)
 
@@ -320,7 +308,7 @@ class EDIDEditorGUI:
             chk.grid(row=i, column=0, sticky="w", pady=2)
             self.manu_vars.append(var)
         
-        standard_box = ttk.LabelFrame(self.outer_boxes[3], text="Standard Timings", padding=5)
+        standard_box = tk.LabelFrame(self.outer_boxes[3], text="Standard Timings", bd=1, relief="solid", padx=5, pady=5)
         standard_box.pack(fill="both", expand=True, pady=5)
         self.inner_boxes.append(standard_box)
         
@@ -359,7 +347,7 @@ class EDIDEditorGUI:
         text_frame = ttk.Frame(self.outer_boxes[4], padding=5)
         text_frame.pack(fill='both', expand=True)
 
-        self.output_text = tk.Text(text_frame, height=30, width=35, wrap='word')
+        self.output_text = tk.Text(text_frame, height=30, width=50, wrap='word')
         self.output_text.pack(fill='both', expand=True)
         
         button_frame = ttk.Frame(self.outer_boxes[4], padding=10)
@@ -418,6 +406,21 @@ class EDIDEditorGUI:
             messagebox.showerror("Invalid Checksum", "Your EDID checksum is invalid and cannot be loaded.")
             return"""
         self.detailed_bytes = edid_data[54:]
+        
+        manu = parse_manufacturer_id(edid_data)
+        if len(manu) != 3 or not manu.isalpha():
+            messagebox.showerror("Invalid Manufacturer ID", "Your EDID cannot be loaded")
+            return
+        
+        mweek = parse_week(edid_data)
+        if mweek < 0 or mweek > 53:
+            messagebox.showerror("Invalid manufacture week")
+            return
+        
+        myear = parse_year(edid_data)
+        if myear < 1990 or myear > 2100:
+            messagebox.showerror("Invalid manufacture year")
+            return
         
         self.manufacturer_id_var.set(parse_manufacturer_id(edid_data))
         self.product_id_var.set(str(parse_product_code(edid_data)))
@@ -534,6 +537,17 @@ class EDIDEditorGUI:
 
         with open(path, "rb") as f:
             self.edid_data = f.read()
+            
+        is_valid = check_header(self.edid_data)
+        self.header_var.set("Valid" if is_valid else "Invalid")
+
+        if not is_valid:
+            messagebox.showerror("Invalid EDID", "Your EDID is invalid and cannot be loaded.")
+            return
+        
+        if len(self.edid_data) != 128:
+            messagebox.showerror("Invalid Length", f"EDID file is {len(self.edid_data)} bytes — expected 128.")
+            return
 
         self.display_edid(self.edid_data)
         self.load_edid_fields(self.edid_data)
@@ -565,8 +579,11 @@ class EDIDEditorGUI:
     def save_edid_as(self):
         file_path = filedialog.asksaveasfilename(
             defaultextension=".bin",
-            filetypes=[("Binary files", "*.bin"), ("All files", "*.*")]
+            filetypes=[("Binary files", "*.bin")]
         )
+        if file_path and not file_path.lower().endswith(".bin"):
+            file_path += ".bin"
+            
         if file_path:
             try:
                 if hasattr(self, 'last_edid') and self.last_edid is not None:
@@ -624,6 +641,18 @@ class EDIDEditorGUI:
                 
     def on_generate_button_click(self):
         try:
+            if self.signal_type_var.get() == "Digital":
+                display_options = ("RGB 4:4:4", "RGB 4:4:4 & YCrCb 4:4:4", "RGB 4:4:4 & YCrCb 4:2:2", "RGB 4:4:4 & YCrCb 4:4:4 & YCrCb 4:2:2")
+                selected_display = self.display_d_var.get()
+            else:
+                display_options = ("Monochrome or Grayscale", "RGB Color", "Non-RGB Color", "Undefined")
+                selected_display = self.display_var.get()
+
+            try:
+                self.display_type_index = display_options.index(selected_display)
+            except ValueError:
+                self.display_type_index = 0
+                
             self.selected_timings = [label for var, label in zip(self.established_vars, self.options_established) if var.get()]
             self.manufacturer_timings_byte = 0x80 if self.manu_vars[0].get() else 0x00
             timings_standard = self.get_standard_timings_list()
@@ -698,7 +727,6 @@ class EDIDEditorGUI:
                     refresh_rate = int(match.group(4))
                     standard_timings_list.append((width, aspect_ratio, refresh_rate))
         return standard_timings_list
-
 
 
 if __name__ == "__main__":
