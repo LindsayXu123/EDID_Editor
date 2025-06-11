@@ -218,7 +218,83 @@ def parse_standard_timings(edid: bytes) -> list[str]:
 def verify_edid_checksum(edid: bytes) -> bool:
     return sum(edid) % 256 == 0
 
+def parse_edid_all(edid: bytes) -> str:
+    output_lines = []
 
+    # Header check
+    if not check_header(edid):
+        return "Invalid EDID header"
+
+    output_lines.append("Valid EDID header\n")
+
+    try:
+        output_lines.append(f"Manufacturer ID: {parse_manufacturer_id(edid)}")
+        output_lines.append(f"Product Code: {parse_product_code(edid)}")
+        output_lines.append(f"Serial Number: {parse_serial_number(edid)}")
+        output_lines.append(f"Manufacture Week: {parse_week(edid)}")
+        output_lines.append(f"Manufacture Year: {parse_year(edid)}")
+        output_lines.append(f"EDID Version: {parse_edid_version(edid)}")
+        output_lines.append(f"EDID Revision: {parse_edid_revision(edid)}")
+
+        # Video Input
+        output_lines.append("\nVideo Input:")
+        video_input = parse_video_input(edid)
+        for k, v in video_input.items():
+            output_lines.append(f" - {k}: {v}")
+
+        # Screen Size
+        output_lines.append("\nScreen Size:")
+        screen = parse_screen_size(edid)
+        for line, _ in screen:
+            output_lines.append(f" - {line}")
+        
+        # Gamma
+        gamma = parse_display_gamma(edid)
+        for line, _ in gamma:
+            output_lines.append(line)
+
+        # Supported Features
+        output_lines.append("\nSupported Features:")
+        features = parse_supported_features(edid)
+        for line, _ in features:
+            output_lines.append(f" {line}")
+
+        # Colour Characteristics
+        output_lines.append("\nColour Characteristics:")
+        colours = parse_colour_characteristics(edid)
+        for k, v in colours.items():
+            output_lines.append(f" - {k}: {v:.3f}")
+
+        # Established Timings
+        output_lines.append("\nEstablished Timings:")
+        flags, manu_byte = parse_established_timings(edid)
+        est_labels = [
+            "720x400 @ 70Hz", "720x400 @ 88Hz", "640x480 @ 60Hz",
+            "640x480 @ 67Hz", "640x480 @ 72Hz", "640x480 @ 75Hz",
+            "800x600 @ 56Hz", "800x600 @ 60Hz", "800x600 @ 72Hz",
+            "800x600 @ 75Hz", "832x624 @ 75Hz", "1024x768 @ 87Hz (interlaced)",
+            "1024x768 @ 60Hz", "1024x768 @ 70Hz", "1024x768 @ 75Hz",
+            "1280x1024 @ 75Hz", "1152x870 @ 75Hz"
+        ]
+        for label, active in zip(est_labels, flags):
+            if active:
+                output_lines.append(f" - {label}")
+        output_lines.append(f"Manufacturer timings byte: 0x{manu_byte:02X}")
+
+        # Standard Timings
+        output_lines.append("\nStandard Timings:")
+        std_timings = parse_standard_timings(edid)
+        for timing in std_timings:
+            output_lines.append(f" - {timing}")
+
+        # Checksum
+        checksum_valid = verify_edid_checksum(edid)
+        output_lines.append(f"\nChecksum is {'valid' if checksum_valid else 'invalid'}")
+
+    except Exception as e:
+        output_lines.append(f"\nError during parsing: {e}")
+
+    return "\n".join(output_lines)
 
 
 

@@ -339,7 +339,7 @@ class EDIDEditorGUI:
         for i, option in enumerate(options_col2):
             var = tk.BooleanVar()
             chk = ttk.Checkbutton(checklist_standard_frame, text=option, variable=var)
-            chk.grid(row=i, column=1, sticky="w", padx=(20, 0), pady=2)  # optional left padding for spacing
+            chk.grid(row=i, column=1, sticky="w", padx=(20, 0), pady=2)
             self.standard_vars.append(var)
 
         self.checksum_var = tk.StringVar()

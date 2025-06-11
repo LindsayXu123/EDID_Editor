@@ -233,6 +233,9 @@ def encode_standard_timings(timings):
             result_bytes.extend([0x01, 0x01])
         else:
             hres, aspect_str, refresh_rate = timings[i]
+            
+            hres = int(hres)
+            refresh_rate = int(refresh_rate)
 
             if aspect_str not in aspect_map:
                 raise ValueError(f"Unknown aspect ratio: {aspect_str}")
