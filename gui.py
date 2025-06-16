@@ -18,7 +18,6 @@ from parser import(
     parse_colour_characteristics,
     parse_established_timings,
     parse_standard_timings,
-    verify_edid_checksum,
     )
 
 from utils import(
@@ -244,7 +243,7 @@ class EDIDEditorGUI:
         self.display_a_combo.current(0)
         self.display_a_combo.grid(row=1, column=0, padx=(2,2), pady=(2,0))
         
-        #colour
+        #colour characteristics
         
         colour_box = tk.LabelFrame(self.outer_boxes[1], text="Colour Characteristics", bd=1, relief="solid", padx=5, pady=5)
         colour_box.pack(fill="both", expand=True, pady=5)
@@ -274,7 +273,7 @@ class EDIDEditorGUI:
         ttk.Label(colour_box, text="y ").grid(row=3, column=3, sticky='e')
         ttk.Entry(colour_box, textvariable=self.whitey_var, width=10).grid(row=3, column=4)
         
-        #timings
+        # established timings
         
         established_box = tk.LabelFrame(self.outer_boxes[2], text="Established Timings", bd=1, relief="solid", padx=5, pady=5)
         established_box.pack(fill="both", expand=True, pady=5)
@@ -292,6 +291,8 @@ class EDIDEditorGUI:
             chk = ttk.Checkbutton(checklist_established_frame, text=option, variable=var)
             chk.grid(row=i, column=0, sticky="w", pady=2)
             self.established_vars.append(var)
+            
+        #manufacturers timings
                     
         manu_timings_box = tk.LabelFrame(self.outer_boxes[2], text="Manufacturer Timings", bd=1, relief="solid", padx=5, pady=5)
         manu_timings_box.pack(fill="both", expand=True, pady=5)
@@ -308,6 +309,8 @@ class EDIDEditorGUI:
             chk = ttk.Checkbutton(checklist_manu_frame, text=option, variable=var)
             chk.grid(row=i, column=0, sticky="w", pady=2)
             self.manu_vars.append(var)
+            
+        #standard timings
         
         standard_box = tk.LabelFrame(self.outer_boxes[3], text="Standard Timings", bd=1, relief="solid", padx=5, pady=5)
         standard_box.pack(fill="both", expand=True, pady=5)
@@ -365,6 +368,7 @@ class EDIDEditorGUI:
         self.create_menu()
         self.update_video_input_state()
         
+    #menu bar
     def create_menu(self):
         menubar = tk.Menu(self.root)
         file_menu = tk.Menu(menubar, tearoff=0)
@@ -390,9 +394,13 @@ class EDIDEditorGUI:
         self.output_text.delete("1.0", tk.END)
         self.output_text.insert(tk.END, hex_dump)
         self.output_text.configure(state='disabled')
-
-        
+    
     def load_edid_fields(self, edid_data: bytes):
+        """
+        Parses and loads the EDID data into the input fields
+        Args:
+            edid_data (bytes): the EDID data from the .bin file
+        """
         is_valid = check_header(edid_data)
         self.header_var.set("Valid" if is_valid else "Invalid")
 
@@ -400,12 +408,6 @@ class EDIDEditorGUI:
             messagebox.showerror("Invalid EDID", "Your EDID is invalid and cannot be loaded.")
             return
         
-        """is_checksum_valid = verify_edid_checksum(edid_data)
-        self.checksum_var.set("Valid" if is_checksum_valid else "Invalid")
-
-        if not is_checksum_valid:
-            messagebox.showerror("Invalid Checksum", "Your EDID checksum is invalid and cannot be loaded.")
-            return"""
         self.detailed_bytes = edid_data[54:]
         
         manu = parse_manufacturer_id(edid_data)
@@ -535,6 +537,9 @@ class EDIDEditorGUI:
         messagebox.showinfo("Help", "This is and EDID Editor. You can load an existing .bin file or start from scratch. Please make sure all fields are filled to generate your EDID. ")
         
     def open_file(self):
+        """
+        Function for opening a .bin file from the menu bar
+        """
         path = filedialog.askopenfilename(filetypes=[("EDID binary", "*.bin")])
         if not path:
             return
@@ -576,6 +581,9 @@ class EDIDEditorGUI:
 
 
     def save_edid(self):
+        """
+        Function to save the generated output to the .bin file
+        """
         if self.current_file_path:
             try:
                 if hasattr(self, 'last_edid') and self.last_edid is not None:
@@ -596,6 +604,9 @@ class EDIDEditorGUI:
 
             
     def save_edid_as(self):
+        """
+        Function to save the generated output to another .bin file
+        """
         file_path = filedialog.asksaveasfilename(
             defaultextension=".bin",
             filetypes=[("Binary files", "*.bin")]
@@ -659,6 +670,9 @@ class EDIDEditorGUI:
                 chk.config(state="normal")
                 
     def on_generate_button_click(self):
+        """
+        Generates the hex dump into the output box on click
+        """
         try:
             if self.signal_type_var.get() == "Digital":
                 display_options = ("RGB 4:4:4", "RGB 4:4:4 & YCrCb 4:4:4", "RGB 4:4:4 & YCrCb 4:2:2", "RGB 4:4:4 & YCrCb 4:4:4 & YCrCb 4:2:2")

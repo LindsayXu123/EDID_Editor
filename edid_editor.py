@@ -1,11 +1,13 @@
 import argparse
-import os
 import sys
 
-from parser import (
+from parser import(
     check_header,
+    parse_manufacturer_id,
+    parse_week,
+    parse_year,
     parse_edid_all
-)
+    )
 
 from cli_utils import (
     encode_manufacturer_id,
@@ -24,6 +26,7 @@ from cli_utils import (
 )
 
 def build_cli_parser():
+    #add arguments
     parser = argparse.ArgumentParser(description="EDID Tool: Generate, Edit, or Parse EDID files.")
     parser.add_argument("mode", choices=["parse", "edit", "gen"], nargs='?', help="Operation mode: parse/edit/gen")
     parser.add_argument("-read", help="Input EDID binary file (required for parse/edit)")
@@ -94,8 +97,35 @@ def manufacturer_id_type(value):
         raise argparse.ArgumentTypeError("Manufacturer ID must be 3 alphabetic characters.")
     return value
 
+VALID_ASPECTS = { "16, 10", "4, 3", "5, 4", "16, 9",}
+
+def is_valid_standard_timing(hres: int, aspect: str, refresh: int) -> bool:
+    valid_timings = {
+    (640, "4:3", 60), (640, "4:3", 72), (640, "4:3", 75), (640, "4:3", 85),
+    (720, "16:10", 70),
+    (800, "4:3", 56), (800, "4:3", 60), (800, "4:3", 72), (800, "4:3", 75), (800, "4:3", 85),
+    (832, "4:3", 75),
+    (1024, "4:3", 60), (1024, "4:3", 70), (1024, "4:3", 75), (1024, "4:3", 85),
+    (1152, "4:3", 75),
+    (1280, "16:9", 60), (1280, "16:9", 75),
+    (1280, "15:9", 60), (1280, "15:9", 75),
+    (1280, "16:10", 60), (1280, "16:10", 75),
+    (1280, "4:3", 60), (1280, "4:3", 85),
+    (1280, "5:4", 60), (1280, "5:4", 75), (1280, "5:4", 85),
+    (1360, "16:9", 60), (1366, "16:9", 60),
+    (1440, "16:10", 60), (1440, "16:10", 75),
+    (1600, "16:9", 60), (1600, "16:9", 75),
+    (1600, "4:3", 60), (1600, "4:3", 75),
+    (1680, "16:10", 60), (1680, "16:10", 75),
+    (1920, "16:9", 60), (1920, "16:9", 75),
+    (1920, "16:10", 60),
+    (2048, "16:9", 60), (2048, "4:3", 60)
+    }
+    return (hres, aspect, refresh) in valid_timings
+
 
 def main():
+    # displays the gui when there aren't any arguments
     if len(sys.argv) == 1:
         import gui
         gui.run_gui()
@@ -108,6 +138,7 @@ def main():
         print("Error: Invalid Arguments")
         sys.exit(e.code)
 
+# parse mode
     if args.mode == "parse":
         if not args.read:
             print("Error: -read is required for parse mode.")
@@ -118,14 +149,36 @@ def main():
         except FileNotFoundError:
             print(f"Error: File not found: {args.read}")
             sys.exit(1)
+           
+#checks for invalid files 
+        is_valid = check_header(edid)
+        if not is_valid:
+            print(f"Invalid EDID. Your EDID is invalid and cannot be loaded.")
+            sys.exit(1)
             
         if len(edid) < 128 or len(edid) % 128 != 0:
             print(f"Error: EDID size must be 128 bytes. Got {len(edid)} bytes.")
             sys.exit(1)
             
+        manu = parse_manufacturer_id(edid)
+        if len(manu) != 3 or not manu.isalpha():
+            print(f"Invalid Manufacturer ID. Your EDID cannot be loaded")
+            sys.exit(1)
+        
+        mweek = parse_week(edid)
+        if mweek < 0 or mweek > 53:
+            print(f"Invalid manufacture week")
+            sys.exit(1)
+        
+        myear = parse_year(edid)
+        if myear < 1990 or myear > 2100:
+            print(f"Invalid manufacture year")
+            sys.exit(1)
+            
         parsed_output = parse_edid_all(edid)
         print(parsed_output)
 
+#generating mode
     elif args.mode == "gen":
         required_fields = ["manufacturer", "product", "serial", "week", "year", "version", "revision",
                        "input_type", "horizontal", "vertical", "gamma", "display_type",
@@ -157,6 +210,10 @@ def main():
             sys.exit(1)
         
         standard_timings = convert_standard_timing_args(args.standard_timings) if args.standard_timings else []
+        for hres, aspect, refresh in standard_timings:
+            if not is_valid_standard_timing(hres, aspect, refresh):
+                print(f"Invalid standard timing: {hres}:{aspect} @ {refresh}Hz")
+                sys.exit(1)
 
         edid = generate_all(
             args.manufacturer, args.product, args.serial,
@@ -220,6 +277,7 @@ def main():
         }
 
         if args.selected_timings:
+            # make sure the established timings are of the options
             normalized_timings = [t.replace(" ", "") for t in args.selected_timings]
             invalid = [t for t in normalized_timings if t not in VALID_ESTABLISHED_TIMINGS]
             if invalid:
@@ -234,7 +292,13 @@ def main():
             encode_established_timings(edid, normalized_timings, args.manufacturer_byte)
             
         if args.standard_timings:
+            # make sure the standard timings are in the correct format and one of the options
             timings = convert_standard_timing_args(args.standard_timings)
+            for hres, aspect, refresh in timings:
+                if not is_valid_standard_timing(hres, aspect, refresh):
+                    print(f"Invalid standard timing: {hres}:{aspect}@{refresh}Hz")
+                    sys.exit(1)
+            
             encode_standard_timings(edid, timings)
 
         with open(args.write, "wb") as f:
