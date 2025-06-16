@@ -48,23 +48,23 @@ class EDIDEditorGUI:
         # Fields
         self.header_var = tk.StringVar()
         self.manufacturer_id_var = tk.StringVar()
-        self.product_id_var = tk.IntVar()
-        self.serial_number_var = tk.IntVar()
-        self.week_var = tk.IntVar()
-        self.year_var = tk.IntVar()
-        self.version_var = tk.IntVar()
-        self.revision_var = tk.IntVar()
-        self.horizontal_var = tk.IntVar()
-        self.vertical_var = tk.IntVar()
-        self.gamma_var = tk.DoubleVar()
-        self.redx_var = tk.DoubleVar()
-        self.redy_var = tk.DoubleVar()
-        self.greenx_var = tk.DoubleVar()
-        self.greeny_var = tk.DoubleVar()
-        self.bluex_var = tk.DoubleVar()
-        self.bluey_var = tk.DoubleVar()
-        self.whitex_var = tk.DoubleVar()
-        self.whitey_var = tk.DoubleVar()
+        self.product_id_var = tk.StringVar()
+        self.serial_number_var = tk.StringVar()
+        self.week_var = tk.StringVar()
+        self.year_var = tk.StringVar()
+        self.version_var = tk.StringVar()
+        self.revision_var = tk.StringVar()
+        self.horizontal_var = tk.StringVar()
+        self.vertical_var = tk.StringVar()
+        self.gamma_var = tk.StringVar()
+        self.redx_var = tk.StringVar()
+        self.redy_var = tk.StringVar()
+        self.greenx_var = tk.StringVar()
+        self.greeny_var = tk.StringVar()
+        self.bluex_var = tk.StringVar()
+        self.bluey_var = tk.StringVar()
+        self.whitex_var = tk.StringVar()
+        self.whitey_var = tk.StringVar()
         self.manfacturer_timings_byte = tk.IntVar()
 
         
@@ -118,6 +118,7 @@ class EDIDEditorGUI:
         self.inner_boxes.append(video_box)
 
         self.signal_type_var = tk.StringVar(value="Digital")
+        self.digital_var = tk.BooleanVar
         self.signal_type_var.trace_add("write", self.update_video_input_state)
 
         digital_rb = tk.Radiobutton(video_box, text="Digital", variable=self.signal_type_var, value="Digital")
@@ -549,7 +550,22 @@ class EDIDEditorGUI:
             return
         
         if len(self.edid_data) != 128:
-            messagebox.showerror("Invalid Length", f"EDID file is {len(self.edid_data)} bytes — expected 128.")
+            messagebox.showerror("Invalid Length", f"EDID file is {len(self.edid_data)} bytes, but expected 128.")
+            return
+        
+        manu = parse_manufacturer_id(self.edid_data)
+        if len(manu) != 3 or not manu.isalpha():
+            messagebox.showerror("Invalid Manufacturer ID", "Your EDID cannot be loaded")
+            return
+        
+        mweek = parse_week(self.edid_data)
+        if mweek < 0 or mweek > 53:
+            messagebox.showerror("Invalid manufacture week")
+            return
+        
+        myear = parse_year(self.edid_data)
+        if myear < 1990 or myear > 2100:
+            messagebox.showerror("Invalid manufacture year")
             return
 
         self.display_edid(self.edid_data)
@@ -656,17 +672,43 @@ class EDIDEditorGUI:
             except ValueError:
                 self.display_type_index = 0
                 
+            product_id = self.parse_int(self.product_id_var.get(), "Product ID")
+            serial_number = self.parse_int(self.serial_number_var.get(), "Serial Number")
+            week = self.parse_int(self.week_var.get(), "Week")
+            year = self.parse_int(self.year_var.get(), "Year")
+            version = self.parse_int(self.version_var.get(), "Version")
+            revision = self.parse_int(self.revision_var.get(), "Revision")
+
+            horizontal = self.parse_int(self.horizontal_var.get(), "Horizontal resolution")
+            vertical = self.parse_int(self.vertical_var.get(), "Vertical resolution")
+            gamma = self.parse_float(self.gamma_var.get(), "Gamma")
+
+            red_x = self.parse_float(self.redx_var.get(), "Red X")
+            red_y = self.parse_float(self.redy_var.get(), "Red Y")
+            green_x = self.parse_float(self.greenx_var.get(), "Green X")
+            green_y = self.parse_float(self.greeny_var.get(), "Green Y")
+            blue_x = self.parse_float(self.bluex_var.get(), "Blue X")
+            blue_y = self.parse_float(self.bluey_var.get(), "Blue Y")
+            white_x = self.parse_float(self.whitex_var.get(), "White X")
+            white_y = self.parse_float(self.whitey_var.get(), "White Y")
+
+            
+        except ValueError as ve:
+            messagebox.showerror("Input Error", str(ve))
+            return
+            
+        try:   
             self.selected_timings = [label for var, label in zip(self.established_vars, self.options_established) if var.get()]
             self.manufacturer_timings_byte = 0x80 if self.manu_vars[0].get() else 0x00
             timings_standard = self.get_standard_timings_list()
             edid_hex = generate_all(
                 self.manufacturer_id_var.get(),
-                int(self.product_id_var.get()),
-                int(self.serial_number_var.get()),
-                int(self.week_var.get()),
-                int(self.year_var.get()),
-                int(self.version_var.get()),
-                int(self.revision_var.get()),
+                product_id,
+                serial_number,
+                week,
+                year,
+                version,
+                revision,
                 self.signal_type_var.get(),
                 self.bits_var.get(),
                 self.interface_var.get(),
@@ -676,9 +718,9 @@ class EDIDEditorGUI:
                 self.self_check_vars[1].get(),
                 self.self_check_vars[2].get(),
                 self.self_check_vars[3].get(),
-                int(self.horizontal_var.get()),
-                int(self.vertical_var.get()),
-                float(self.gamma_var.get()),
+                horizontal,
+                vertical,
+                gamma,
                 self.self_support_vars[0].get(),
                 self.self_support_vars[1].get(),
                 self.self_support_vars[2].get(),
@@ -686,11 +728,11 @@ class EDIDEditorGUI:
                 self.self_support_vars[3].get(),
                 self.self_support_vars[4].get(),
                 self.self_support_vars[5].get(),
-                self.signal_type_var.get(),
-                self.redx_var.get(), self.redy_var.get(),
-                self.greenx_var.get(), self.greeny_var.get(),
-                self.bluex_var.get(), self.bluey_var.get(),
-                self.whitex_var.get(), self.whitey_var.get(),
+                self.signal_type_var.get() == "Digital",
+                red_x, red_y,
+                green_x, green_y,
+                blue_x, blue_y,
+                white_x, white_y,
                 self.selected_timings,
                 self.manufacturer_timings_byte,
                 timings_standard
@@ -730,7 +772,25 @@ class EDIDEditorGUI:
                     refresh_rate = int(match.group(4))
                     standard_timings_list.append((width, aspect_ratio, refresh_rate))
         return standard_timings_list
+    
+    def parse_int(self, val, field_name):
+        try:
+            number = int(val)
+        except ValueError:
+            raise ValueError(f"{field_name} must be an integer.")
+        
+        return number
 
+    def parse_float(self, val, field_name):
+        try:
+            return float(val)
+        except ValueError:
+            raise ValueError(f"{field_name} must be a number.")
+
+def run_gui():
+    root = tk.Tk()
+    app = EDIDEditorGUI(root)
+    root.mainloop()
 
 if __name__ == "__main__":
     root = tk.Tk()

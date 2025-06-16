@@ -58,7 +58,7 @@ def encode_input_type(edid: bytearray, input_type: str,
             "0.700, 0.000 (0.7 V p-p)",
         ]
         level_index = levels.index(signal_level) if signal_level in levels else 0
-        byte |= (level_index & 0x03) << 5
+        byte |= (level_index & 0x03) << 4
         byte |= 0x10 if setup else 0
         if sync_hv:
             byte |= 0x08
@@ -143,21 +143,36 @@ def encode_colour_characteristics(edid: bytearray,
     edid[34] = wy & 0xFF
 
 def encode_established_timings(edid: bytearray, selected_timings: list, manufacturer_byte: int) -> None:
-    
+    # Clear established timings block
     edid[35] = 0
     edid[36] = 0
-    edid[37] = 0
-    
+    edid[37] = manufacturer_byte if manufacturer_byte is not None else 0
+
     timing_map = {
-        "720x400@70Hz": (35, 0x40),
-        "720x400@88Hz": (35, 0x80),
-        # add more mappings
+        "720x400@70Hz": (35, 0b10000000),
+        "720x400@88Hz": (35, 0b01000000),
+        "640x480@60Hz": (35, 0b00100000),
+        "640x480@67Hz": (35, 0b00010000),
+        "640x480@72Hz": (35, 0b00001000),
+        "640x480@75Hz": (35, 0b00000100),
+        "800x600@56Hz": (35, 0b00000010),
+        "800x600@60Hz": (35, 0b00000001),
+        "800x600@72Hz": (36, 0b10000000),
+        "800x600@75Hz": (36, 0b01000000),
+        "832x624@75Hz": (36, 0b00100000),
+        "1024x768@87Hz (interlaced)": (36, 0b00010000),
+        "1024x768@60Hz": (36, 0b00001000),
+        "1024x768@70Hz": (36, 0b00000100),
+        "1024x768@75Hz": (36, 0b00000010),
+        "1280x1024@75Hz": (36, 0b00000001),
     }
-    
+
     for timing in selected_timings:
-        if timing in timing_map:
-            byte_index, bit_mask = timing_map[timing]
-            edid[byte_index] |= bit_mask
+        if timing not in timing_map:
+            raise ValueError(f"Unknown established timing: {timing}")
+        byte_index, bit_mask = timing_map[timing]
+        edid[byte_index] |= bit_mask
+
 
 def encode_standard_timings(edid: bytearray, timings: list) -> None:
     aspect_map = {

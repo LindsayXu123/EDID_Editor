@@ -42,7 +42,7 @@ def build_cli_parser():
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # Generate command
-    gen = subparsers.add_parser("generate", help="Generate EDID from parameters")
+    gen = subparsers.add_parser("gen", help="Generate EDID from parameters")
     
     # Shared fields (also used in edit mode)
     for p in (gen,):
